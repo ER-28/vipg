@@ -1,6 +1,6 @@
-import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { Client } from 'pg';
+import inquirer from 'inquirer';
+import type { Client } from 'pg';
 import { TableService } from '../services/tableService.js';
 
 export class MenuManager {
@@ -89,7 +89,7 @@ export class MenuManager {
     while (true) {
       const offset = currentPage * pageSize;
       const { data: rows } = await this.tableService.getTableData(tableName, pageSize, offset);
-      
+
       console.clear();
       console.log(chalk.cyan(`\nBrowsing '${tableName}' (Page ${currentPage + 1}/${totalPages}):`));
       console.table(rows);
@@ -131,20 +131,24 @@ export class MenuManager {
   private async handleTableStatistics(tableName: string): Promise<void> {
     const count = await this.tableService.getTableCount(tableName);
     const { data: structure } = await this.tableService.describeTable(tableName);
-    
+
     console.log(chalk.cyan(`\nStatistics for table '${tableName}':`));
     console.log(chalk.yellow(`Total records: ${count}`));
     console.log(chalk.yellow(`Number of columns: ${structure.length}`));
-    
-    const columnTypes = structure.reduce<Record<string, number>>((acc: { [x: string]: any; }, col: { data_type: string | number; }) => {
-      acc[col.data_type] = (acc[col.data_type] || 0) + 1;
-      return acc;
-    }, {});
+
+    const columnTypes = structure.reduce<Record<string, number>>(
+      (acc: { [x: string]: any }, col: { data_type: string | number }) => {
+        acc[col.data_type] = (acc[col.data_type] || 0) + 1;
+        return acc;
+      },
+      {}
+    );
 
     console.log(chalk.yellow('\nColumn type distribution:'));
-    Object.entries(columnTypes).forEach(([type, count]) => {
+    const entries = Object.entries(columnTypes);
+    for (const [type, count] of entries) {
       console.log(chalk.gray(`  ${type}: ${count}`));
-    });
+    }
   }
 
   private async waitForInput(): Promise<void> {

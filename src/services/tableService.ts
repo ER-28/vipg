@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { Client } from 'pg';
-import { TableColumn, QueryResult } from '../types/database.js';
+import type { Client } from 'pg';
+import type { QueryResult, TableColumn } from '../types/database.js';
 
 export class TableService {
   constructor(private readonly client: Client) {}
@@ -15,7 +15,7 @@ export class TableService {
       `);
       return {
         success: true,
-        data: rows.map(row => row.table_name)
+        data: rows.map((row) => row.table_name)
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -30,7 +30,8 @@ export class TableService {
 
   public async describeTable(tableName: string): Promise<QueryResult<TableColumn>> {
     try {
-      const { rows } = await this.client.query(`
+      const { rows } = await this.client.query(
+        `
         SELECT 
           column_name,
           data_type,
@@ -40,7 +41,9 @@ export class TableService {
         FROM information_schema.columns
         WHERE table_name = $1
         ORDER BY ordinal_position
-      `, [tableName]);
+      `,
+        [tableName]
+      );
       return {
         success: true,
         data: rows
@@ -58,10 +61,11 @@ export class TableService {
 
   public async getTableData(tableName: string, limit = 10, offset = 0): Promise<QueryResult> {
     try {
-      const { rows } = await this.client.query(
-        'SELECT * FROM $1:name LIMIT $2 OFFSET $3',
-        [tableName, limit, offset]
-      );
+      const { rows } = await this.client.query('SELECT * FROM $1:name LIMIT $2 OFFSET $3', [
+        tableName,
+        limit,
+        offset
+      ]);
       return {
         success: true,
         data: rows
@@ -79,13 +83,15 @@ export class TableService {
 
   public async getTableCount(tableName: string): Promise<number> {
     try {
-      const { rows } = await this.client.query(
-        'SELECT COUNT(*) as count FROM $1:name',
-        [tableName]
-      );
-      return parseInt(rows[0].count);
+      const { rows } = await this.client.query('SELECT COUNT(*) as count FROM $1:name', [
+        tableName
+      ]);
+      return Number.parseInt(rows[0].count);
     } catch (error) {
-      console.error(chalk.red('Error counting records:'), error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        chalk.red('Error counting records:'),
+        error instanceof Error ? error.message : 'Unknown error'
+      );
       return 0;
     }
   }

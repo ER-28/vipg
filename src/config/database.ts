@@ -1,7 +1,7 @@
-import inquirer from 'inquirer';
 import chalk from 'chalk';
+import inquirer from 'inquirer';
 import pg from 'pg';
-import {DatabaseConfig} from "../types/database.js";
+import type { DatabaseConfig } from '../types/database.js';
 
 export class DatabaseManager {
   private static instance: DatabaseManager;
@@ -62,7 +62,10 @@ export class DatabaseManager {
       console.log(chalk.green('✓ Connected to database successfully!'));
       return this.client;
     } catch (error) {
-      console.error(chalk.red('Error connecting to database:'), error instanceof Error ? error.message : 'Unknown error');
+      console.error(
+        chalk.red('Error connecting to database:'),
+        error instanceof Error ? error.message : 'Unknown error'
+      );
       return null;
     }
   }
